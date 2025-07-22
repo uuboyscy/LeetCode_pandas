@@ -52,6 +52,9 @@ import pandas as pd
 
 
 def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
+    activity = activity[
+        ["player_id", "event_date"]
+    ]
     activity["event_date_add_1_day"] = activity["event_date"] + pd.Timedelta(days=1)
     ids_logged_in_following_day = activity.merge(
         activity.groupby("player_id", as_index=False)["event_date_add_1_day"].min(),
@@ -66,3 +69,23 @@ def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
         ],
         columns=["fraction"]
     ).round(2)
+
+
+def gameplay_analysis(activity: pd.DataFrame) -> pd.DataFrame:
+    fraction_id_set = set()
+    activity = activity.sort_values(["player_id", "event_date"], ascending=True)
+    activity["rn"] = activity.groupby("player_id").cumcount()
+
+    previous_date = None
+    for _, row in activity.iterrows():
+        if (row["rn"] == 1) and (previous_date + pd.Timedelta(days=1) == row["event_date"]):
+            fraction_id_set.add(row["player_id"])
+
+        previous_date = row["event_date"]
+
+    return pd.DataFrame(
+        {
+            "fraction": [len(fraction_id_set) /  len(activity["player_id"].unique())],
+        }
+    ).round(2)
+
