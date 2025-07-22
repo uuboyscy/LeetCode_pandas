@@ -1,22 +1,23 @@
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 URL = """
-https://leetcode.com/problems/trips-and-users/
+https://leetcode.com/problems/game-play-analysis-iv/description/
 """.strip()
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "Referer": URL,
-    "Content-Type": "application/json"
 }
 
+session = requests.Session()
+session.get(URL, headers=headers)
 
 # Use GraphQL to get question frontendId
 graphql_url = "https://leetcode.com/graphql"
-slug = URL.strip().split("/")[-2]
+slug = [p for p in urlparse(URL).path.split("/") if p][1]
 query = {
     "operationName": "questionTitle",
     "variables": {"titleSlug": slug},
@@ -30,7 +31,14 @@ query = {
     """
 }
 
-res = requests.post(graphql_url, json=query, headers=headers)
+headers = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "Referer": f"https://leetcode.com/problems/{slug}/",
+    "x-csrftoken": session.cookies.get("csrftoken", ""),
+    "Content-Type": "application/json"
+}
+
+res = session.post(graphql_url, json=query, headers=headers)
 data = res.json()
 
 question_num = int(data["data"]["question"]["questionFrontendId"])
@@ -38,7 +46,7 @@ title = data["data"]["question"]["title"].replace(" ", "_").lower()
 filename = f"_{question_num:05d}_{title}.py"
 
 # Get the problem description
-res_html = requests.get(URL.strip(), headers=headers)
+res_html = session.get(URL.strip(), headers=headers)
 soup = BeautifulSoup(res_html.text, "html.parser")
 description = soup.select_one('meta[property="og:description"]').get("content")  # type: ignore
 content = f'"""\n{description}\n"""\n'
