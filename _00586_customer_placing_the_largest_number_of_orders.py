@@ -65,4 +65,7 @@ def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
         .reset_index()
         .loc[[0], ["customer_number"]]
     )
-    
+
+
+def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
+    return orders["customer_number"].mode().to_frame()
