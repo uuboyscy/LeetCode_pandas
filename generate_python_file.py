@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 URL = """
-https://leetcode.com/problems/classes-with-at-least-5-students/description/
+https://leetcode.com/problems/human-traffic-of-stadium/description/
 """.strip()
 
 headers = {
