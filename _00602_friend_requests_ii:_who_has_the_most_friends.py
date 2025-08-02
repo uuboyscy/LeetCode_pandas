@@ -60,4 +60,4 @@ def most_friends(request_accepted: pd.DataFrame) -> pd.DataFrame:
             request_accepted.rename(columns={"requester_id": "id", "accepter_id": "friend"}),
             request_accepted.rename(columns={"requester_id": "friend", "accepter_id": "id"})
         ]
-    ).groupby("id", as_index=False)["friend"].size().sort_values("size", ascending=False, ignore_index=True).loc[[0]].rename(columns={"size": "num"})
+    ).groupby("id", as_index=False)["friend"].size().sort_values("size", ascending=False).head(1).rename(columns={"size": "num"})
