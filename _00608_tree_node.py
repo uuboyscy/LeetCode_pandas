@@ -86,6 +86,72 @@ Explanation: If there is only one node on the tree, you only need to output its 
 
 Note: This question is the same as 3054: Binary Tree Nodes. [https://leetcode.com/problems/binary-tree-nodes/description/]
 """
+import pandas as pd
+
+
+def tree_node(tree: pd.DataFrame) -> pd.DataFrame:
+    tree_with_p_and_n = tree.merge(
+        tree,
+        how="left",
+        left_on="id",
+        right_on="p_id",
+        suffixes=["", "_r"]
+    )[["id", "p_id", "id_r"]]
+
+    tree_with_p_and_n["type"] = "Inner"
+    tree_with_p_and_n.loc[tree_with_p_and_n["id_r"].isna(), "type"] = "Leaf"
+    tree_with_p_and_n.loc[tree_with_p_and_n["p_id"].isna(), "type"] = "Root"
+
+    return tree_with_p_and_n[["id", "type"]].drop_duplicates()
+
+
+###############################
+
+import numpy as np
+import pandas as pd
+
+
+def tree_node(tree: pd.DataFrame) -> pd.DataFrame:
+    tree_with_p_and_n = tree.merge(
+        tree,
+        how="left",
+        left_on="id",
+        right_on="p_id",
+        suffixes=["", "_r"]
+    )[["id", "p_id", "id_r"]]
+
+    tree_with_p_and_n["type"] = np.where(
+        tree_with_p_and_n["p_id"].isna(),
+        "Root",
+        np.where(
+            tree_with_p_and_n["id_r"].isna(),
+            "Leaf",
+            "Inner",
+        )
+    )
+
+    return tree_with_p_and_n[["id", "type"]].drop_duplicates()
+
+
+################
+
+import pandas as pd
+
+
+def tree_node(tree: pd.DataFrame) -> pd.DataFrame:
+
+    parents_set = [x for x in tree.p_id.to_list() if type(x) == int]
+
+    def category_assign(row):
+        if pd.isna(row["p_id"]):
+            return "Root"
+        elif row["id"] in parents_set:
+            return "Inner"
+        else:
+            return "Leaf"
+
+    tree["type"] = tree.apply(category_assign, axis = 1)
+    return tree[["id","type"]]
 
 
 """
