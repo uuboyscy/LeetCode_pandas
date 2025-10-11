@@ -44,6 +44,31 @@ Output:
 
 """
 
+### Pandas
+import pandas as pd
+
+
+# Solution 1
+def triangle_judgement(triangle: pd.DataFrame) -> pd.DataFrame:
+    triangle_max_side_array = triangle.max(axis=1)
+
+    triangle.loc[
+        triangle["x"] + triangle["y"] + triangle["z"] - triangle_max_side_array > triangle_max_side_array,
+        "triangle"
+    ] = "Yes"
+
+    triangle["triangle"] = triangle["triangle"].fillna("No")
+
+    return triangle
+
+
+# Solution 2
+def triangle_judgement(triangle: pd.DataFrame) -> pd.DataFrame:
+    triangle["triangle"] = triangle.apply(
+        lambda s: "Yes" if (s.x + s.y + s.z - s.max() > s.max()) else "No", axis=1)
+
+    return triangle
+
 
 ### SQL
 """
